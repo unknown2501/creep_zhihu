@@ -51,6 +51,8 @@ def get_new_pins(user_id, latest_update=0):
         furl.format(user_id=user_id)
     )
 
+    print(response.status_code)
+
     soup = BeautifulSoup(response.text, 'html.parser')
     data = soup.find(id='js-initialData')
     data = json.loads(data.text)
