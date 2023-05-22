@@ -35,7 +35,3 @@ def get_tl(user_id: str):
     pins = sorted(pins, key=lambda x: x['time_update'])
     pins = pins[:20]
     return {'pins': pins}
-
-
-if __name__ == '__main__':
-    get_pins('s.invalid')
