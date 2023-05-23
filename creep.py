@@ -7,7 +7,6 @@ import models
 HEADERS_ANTICREEP = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br',
     'Connection': 'keep-alive',
 }
@@ -18,18 +17,21 @@ def get_followings(user_id):
     page = 1
     following = []
     while True:
-        # print(f"CREEPING PAGE{page}")
         response = requests.get(
             furl.format(user_id=user_id, page=page),
             headers=HEADERS_ANTICREEP
         )
+        print(response.url)
+        
         if response.status_code != 200:
             raise Exception("REJECTED!")
         page += 1
 
         soup = BeautifulSoup(response.text, 'html.parser')
+
         data = soup.find(id='js-initialData')
-        data = json.loads(data.text)
+
+        data = json.loads(data.contents[0])
 
         following_page = data['initialState']['entities']['users'].keys()
         following_page = list(following_page)
@@ -55,13 +57,14 @@ def get_new_pins(user_id, latest_update=0):
 
     soup = BeautifulSoup(response.text, 'html.parser')
     data = soup.find(id='js-initialData')
-    data = json.loads(data.text)
+    data = json.loads(data.contents[0])
 
     pins = data['initialState']['entities']['pins']
     return pins
 
 
 def update_pins(user_id):
+    print(f"UPDATING {user_id} PINS")
     pins_db = models.Pins.filter(
         models.Pins.user_id == user_id).order_by(models.Pins.time_update)
     pins_db = list(pins_db)
@@ -73,6 +76,7 @@ def update_pins(user_id):
 
     pins_new = get_new_pins(user_id, latest_update)
 
+    print(f"UPDATING {len(pins_new.keys())} PINS FROM {user_id}")
     for key in pins_new.keys():
         if pins_new[key]['updated'] > latest_update:
             models.Pins.create(

@@ -13,7 +13,7 @@ def root():
 @app.get("/pins/")
 def get_pins(user_id: str):
 
-    # update_pins(user_id)
+    update_pins(user_id)
 
     pins = models.Pins.filter(models.Pins.user_id == user_id).order_by(
         models.Pins.time_update)
@@ -35,3 +35,7 @@ def get_tl(user_id: str):
     pins = sorted(pins, key=lambda x: x['time_update'])
     pins = pins[:20]
     return {'pins': pins}
+
+if __name__=='__main__':
+    import uvicorn
+    uvicorn.run(app,port=8005)
